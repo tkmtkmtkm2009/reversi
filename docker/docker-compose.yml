@@ -1,0 +1,92 @@
+version: '2'
+services:
+  memcached:
+    image: memcached
+    container_name: memcached
+
+  data:
+    image: busybox
+    volumes:
+      - ./misc/data:/var/lib/mysql
+
+  redis:
+    image: redis
+    container_name: redis
+
+  mysql:
+    image: mysql
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: mysql_database
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      TZ: "Asia/Tokyo"
+    ports:
+      - "13306:3306"
+    volumes_from:
+      - data
+    volumes:
+      - ../application/:/docker-entrypoint-initdb.d/
+      - ../dump/:/dump/
+      - ../mysql/:/etc/mysql/conf.d/
+    container_name: mysql
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "8000:80"
+      - "443:443"
+    environment:
+      TZ: "Asia/Tokyo"
+    volumes:
+      - ../project-name/:/var/www/project-name
+    links:
+      - web
+    container_name: nginx
+
+  web:
+    build: ./php-fpm
+    volumes:
+      - ../project-name/:/var/www/project-name
+    links:
+      - mysql
+      - memcached
+      - redis
+    environment:
+      DATABASE_HOST: 'mysql'
+      DATABASE_NAME: 'mysql_database'
+      DATABASE_USER: 'user'
+      DATABASE_PASSWORD: 'password'
+      TZ: "Asia/Tokyo"
+    container_name: web
+
+  ubuntu:
+    build: ./ubuntu
+    tty: true
+    volumes:
+      - ../ubuntu/script/:/script
+      - ../ubuntu/mysql/:/etc/mysql/conf.d/
+    links:
+      - mysql
+    environment:
+      DATABASE_HOST: 'mysql'
+      DATABASE_NAME: 'mysql_database'
+      DATABASE_USER: 'user'
+      DATABASE_PASSWORD: 'password'
+    container_name: ubuntu
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mysql
+      - PMA_USER=root
+      - PMA_PASSWORD=root_password
+    links:
+      - mysql
+    ports:
+      - 8080:80
+    volumes:
+      - ../phpmyadmin/sessions:/sessions
+      - ../phpmyadmin/conf/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php

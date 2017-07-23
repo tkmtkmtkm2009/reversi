@@ -1,0 +1,4 @@
+--CREATE DATABASE `main`;
+--CREATE DATABASE `sub1`;
+--CREATE DATABASE `sub2`;
+--grant all on *.* to user@'%' identified by 'password';
