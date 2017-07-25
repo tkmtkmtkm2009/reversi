@@ -234,7 +234,7 @@ class ReversiController extends Controller
             $result['talk'] = $talk_list[$status['level']][$rand2-1];
         } else if (($x==0 && $y==0) || ($x==0 && $y==$n-1) || ($x==$n-1 && $y==0) || ($x==$n-1 && $y==$n-1)) {
             $talk_list = array(
-                1 => array('ごめんなさい。こういうときどんな顔をすればいいかわからないの。','…ありがとう','…角取ります'),
+                1 => array('…ありがとう','…角取るよ'),
                 2 => array('角っ♪','角っ♡'),
                 3 => array('当然の結果です','ここです！','角取ります！'),
             );
@@ -300,7 +300,7 @@ class ReversiController extends Controller
         if ($end) {
             $result['talk'] = array();
             if ($status['level'] == 1 && $result['result'] == 1) {
-                $result['talk'] = "うっひょ～☆";
+                $result['talk'] = "まいりました";
             } else if ($status['level'] == 2 && $result['result'] == 1) {
                 $result['talk'] = "まいりました(；o；)";
             } else if ($status['level'] == 3 && $result['result'] == 1) {

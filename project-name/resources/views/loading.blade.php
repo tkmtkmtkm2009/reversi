@@ -25,7 +25,7 @@
         width: 30px;
         height: 30px;
         left:50%;
-        top:0;
+        top: 0;
         margin:0 0 0 -12px;
         background:url(/img/loading.gif) no-repeat;
         display:none;

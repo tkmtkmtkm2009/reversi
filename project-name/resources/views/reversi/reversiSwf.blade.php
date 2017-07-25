@@ -24,7 +24,7 @@
                 </div>
             @endif
             <div id="view">
-                <div class="ml3 mb5">
+                <div class="pl3 pb5 character">
                     <div class="float-left"><table><tr><td id="enemy_turn" class="cell
                     @if ($turn == 1)
                         white
@@ -39,9 +39,9 @@
                     @endif
                     </div></div>
                     <div class="float-left img-small"><span id="enemy_img">
-                        <img src="/img/{{ $level_list[$level]['card_id'] }}.jpg" width="39" height="39">
+                        <img class="img-small" src="/img/{{ $level_list[$level]['card_id'] }}.jpg">
                     </span><div id="enemy_name" class="name">{{ $level_list[$level]['name'] }}</div></div>
-                    <div id="balloon" class="balloon-left"></div>
+                    <div id="balloon" class="float-left balloon-left"></div>
                 </div>
                 <table class="table">
                 @foreach ($board as $i => $item)
@@ -64,7 +64,7 @@
                     </tr>
                 @endforeach
                 </table>
-                <div class="ml3 mt5">
+                <div class="pl3 pt5 character">
                     <div class="float-left"><table><tr><td id="my_turn" class="cell
                     @if ($turn == 1)
                         black
@@ -79,7 +79,7 @@
                     @endif
                     </div></div>
                     <div id="my_img" class="float-left img-small">
-                        <img src="/img/{{ $avatar['card_id'] }}.jpg" width="39" height="39">
+                        <img class="img-small" src="/img/{{ $avatar['card_id'] }}.jpg">
                     </div>
                 </div>
             </div>
@@ -88,7 +88,7 @@
             </div>
             <div id="end" class="end">
                 <div id="result" class="result_img"></div>
-                <div id="nextbutton"><div class="nextbutton result_draw">次へ</div></div>
+                <div id="nextbutton"><div class="btn btn-primary nextbutton">次へ</div></div>
             </div>
         </div>
     </div>
@@ -97,10 +97,19 @@
 
 @push('css')
 <style type="text/css">
-    .stage, .stage #animelim{/*height:390px;*/margin: 0 auto;}
-    .nextbutton{width: 98px;display: block;}
+    .stage, .stage #animelim{margin: 0 auto;}
+    .nextbutton{
+        display: block !important;
+        width: 60px;
+        margin: 0 auto;
+    }
     .img{width: 70px;}
-    .img-small{width: 39px;}
+    .img-small{
+        max-width: 47px;
+        max-height: 47px;
+        width: calc((100vmin - 39px)/8);
+        height: calc((100vmin - 39px)/8);
+    }
     #select_turn{text-align: center;}
     .select_turn{display: inline-block;margin: 20px;}
     .select_level{display: inline-block;width: 100px;}
@@ -114,36 +123,70 @@
         clear:both;
     }
     .float-left{float: left;}
-    .ml3{margin-left: 3px;}
+    .pl3{padding-left: 3px;}
+    .pt5{padding-top: 5px;}
+    .pb5{padding-bottom: 5px;}
+    .character{
+        width:100%;
+        max-width: 377px;
+        height: 65px;
+        margin: 0 auto;
+        position: relative;
+    }
     #pass{text-align: center;}
     .end {
-        position: absolute;
-        top: 180px;
-        left: 50px;
+        position: relative;
+        top: -290px;
     }
     #balloon{display: none;}
     .balloon-left {
-        background-color: #fff;
-        padding: 15px;
+        max-width: 68%;
+        margin-left: 10px;
+        background-color: white;
+        padding: 1rem;
         position: absolute;
-        border-radius: 10px;
-        width: 180px;
-        left: 100px;
-        color: black;
-        z-index: 10;
+        border: 1px solid #aaa;
+        border-radius: 4px;
     }
-    .balloon-left:after {
-        content: "";
+    @media (max-width: 499px) {
+        .balloon-left {
+            left: 28%;
+        }
+    }
+    @media (min-width: 500px) {
+        .balloon-left {
+            left: 100px;
+        }
+    }
+    .balloon-left:before {
+        content: '';
         position: absolute;
-        top: 50%;
-        left: -13px;
-        margin-top: -10px;
-        display: block;
         width: 0px;
         height: 0px;
-        border-style: solid;
-        border-width: 10px 20px 10px 0;
-        border-color: transparent #fff transparent transparent;
+        border-top: 10px solid white;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        -moz-transform: rotate(90deg);
+        -webkit-transform: rotate(90deg);
+        transform: rotate(90deg);
+        top: 15px;
+        left: -14px;
+        z-index: 0;
+    }
+    .balloon-left:after {
+        content: '';
+        position: absolute;
+        width: 0px;
+        height: 0px;
+        border-top: 10px solid #aaa;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        -moz-transform: rotate(90deg);
+        -webkit-transform: rotate(90deg);
+        transform: rotate(90deg);
+        top: 15px;
+        left: -15px;
+        z-index: -1;
     }
     .btn-pass{position:absolute;left: 100px;}
     .radio-inline2 input[type="radio"] {
@@ -169,7 +212,7 @@
         width: 150px;
         margin: 0 auto 10px;
         text-align: center;
-        background-color: rgba(0,0,0,0.6);
+        background-color: rgba(255,255,255,0.9);
         padding: 5px;
         border: 1px solid #999;
         border-radius: 5px;
@@ -255,6 +298,7 @@
         var nY = dElm.scrollTop || dBody.scrollTop;         //現在位置のY座標
         var cH = dElm.clientHeight || dBody.clientHeight;   //表示領域高
         nY = nY + cH / 2 - 20;
+        if (nY > 320) nY = 320;
         $('#loading').css('margin-top',nY+'px');
         $('#modalContLoading').css('display','block');
         $('#loading').css('display','block');
@@ -414,6 +458,7 @@
                 var nY = dElm.scrollTop || dBody.scrollTop;         //現在位置のY座標
                 var cH = dElm.clientHeight || dBody.clientHeight;   //表示領域高
                 nY = nY + cH / 2 - 20;
+                if (nY > 320) nY = 320;
                 $('#loading').css('margin-top',nY+'px');
                 $('#modalContLoading').css('display','block');
                 $('#loading').css('display','block');
@@ -524,6 +569,7 @@
                 var nY = dElm.scrollTop || dBody.scrollTop;         //現在位置のY座標
                 var cH = dElm.clientHeight || dBody.clientHeight;   //表示領域高
                 nY = nY + cH / 2 - 20;
+                if (nY > 320) nY = 320;
                 $('#loading').css('margin-top',nY+'px');
                 $('#modalContLoading').css('display','block');
                 $('#loading').css('display','block');
