@@ -178,8 +178,110 @@ class Reversi
         return $ret;
     }
 
+    public function getScoreFromAI($board, $player)
+    {
+        $board_str = '';
+        if ($player == -1) {
+            // 黒 <-> 白 変換
+            foreach ($board as $i => $item) {
+                foreach ($item as $j => $v) {
+                    if ($v['state'] != 0) {
+                        $board[$i][$j]['state'] *= $player;
+                    }
+                }
+            }
+        }
+        foreach ($board as $i => $item) {
+            foreach ($item as $j => $v) {
+                // 1手目 F5(5行6列目)に置いたようにするために変換
+
+            }
+        }
+        foreach ($board as $i => $item) {
+            foreach ($item as $j => $v) {
+                if ($v['state'] == 1) {
+                    $board_str .= '1';
+                } else if ($v['state'] == -1) {
+                    $board_str .= '2';
+                } else {
+                    $board_str .= '0';
+                }
+            }
+        }
+
+        $base_url = 'http://tensorflow:8889/api/reversi?board=';
+        $response = file_get_contents($base_url.$board_str);
+        // 結果はjson形式で返されるので
+        $result = json_decode($response,true);
+
+        return $result['results'];
+    }
+
+    public function getBestXYFromAIScore($score)
+    {
+        $ret = array();
+        $x = 0;
+        $y = 0;
+        $max_score = 0;
+        foreach ($score as $i => $item) {
+            foreach ($item as $j => $v) {
+                if ($max_score == 0) {
+                    $x = $i;
+                    $y = $j;
+                    $max_score = $v[0];
+                } else if ($v > $max_score) {
+                    $x = $i;
+                    $y = $j;
+                    $max_score = $v[0];
+                }
+            }
+        }
+
+        if ($max_score) {
+            $ret = array('x' => $x, 'y' => $y);
+        }
+        return $ret;
+    }
+
     public function getBestXY($board, $player, $level, $d = 0)
     {
+        // 深層学習(仮)
+        $count = 0;
+        foreach ($board as $i => $item) {
+            foreach ($item as $j => $v) {
+                if ($v['state'] != 0) {
+                    $count++;
+                }
+            }
+        }
+        if ($level == 3 && $count > 20 && $d == 0) {
+
+            $score = array();
+            foreach ($board as $i => $item) {
+                foreach ($item as $j => $v) {
+                    if ($v['put'] == 1) {
+                        $tmp_board = $board;
+                        $list = $this->listVulnerableCells($tmp_board, $i, $j, $player);
+                        $tmp_board[$i][$j]['state'] = $player;
+                        foreach ($list as $v) {
+                            $tmp_board[$v[0]][$v[1]]['state'] = $player;
+                        }
+                        $score[$i][$j] = $this->getScoreFromAI($tmp_board, $player);
+                    }
+                }
+            }
+            $ai = $this->getBestXYFromAIScore($score);
+
+            $ret = array('put' => 0);
+            if ($ai) {
+                $ret['put'] = 1;
+                $ret['x'] = $ai['x'];
+                $ret['y'] = $ai['y'];
+            }
+            return $ret;
+        }
+
+
         $ret = array('put' => 0);
 
         if ($level == 1) {

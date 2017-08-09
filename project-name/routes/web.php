@@ -24,3 +24,5 @@ Route::get('reversi/doStartReversi', 'ReversiController@doStartReversi');
 Route::post('reversi/doSetTurn', 'ReversiController@doSetTurn');
 Route::post('reversi/doPut', 'ReversiController@doPut');
 Route::post('reversi/doPass', 'ReversiController@doPass');
+
+Route::get('wtb2csv/index', 'Wtb2CsvController@index');

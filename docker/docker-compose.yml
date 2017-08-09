@@ -53,6 +53,7 @@ services:
       - mysql
       - memcached
       - redis
+      - tensorflow
     environment:
       DATABASE_HOST: 'mysql'
       DATABASE_NAME: 'mysql_database'
@@ -90,3 +91,13 @@ services:
     volumes:
       - ../phpmyadmin/sessions:/sessions
       - ../phpmyadmin/conf/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php
+
+  tensorflow:
+    build: ./tensorflow
+    environment:
+      TZ: "Asia/Tokyo"
+    ports:
+      - 8888:8888
+      - 8889:8889
+    volumes:
+      - ../tensorflow:/tmp

@@ -115,10 +115,10 @@ class ReversiController extends Controller
         $board = json_decode($status['board'], true);
 
         $change_turn = false;
-        if ($level == 3 && $turn  == 1) {
-            $change_turn = true;
-            $turn  = -1;
-        }
+        // if ($level == 3 && $turn  == 1) {
+        //     $change_turn = true;
+        //     $turn  = -1;
+        // }
         if ($turn != 1) {
             $turn  = -1;
             $opponent = $reversi->nextPlayer($turn);
@@ -126,7 +126,9 @@ class ReversiController extends Controller
             $rand = mt_rand(0,3);
             $n = \Config::get('const.reversi_width');
             if ($level == 3) {
-                $first = array(array(0,0),array(0,$n-1),array($n-1,0),array($n-1,$n-1));
+                // $first = array(array(0,0),array(0,$n-1),array($n-1,0),array($n-1,$n-1));
+                $first = array(array($n/2-1,$n/2-2),array($n/2-2,$n/2-1),array($n/2,$n/2+1),array($n/2+1,$n/2));
+                $rand = 2;
             } else {
                 $first = array(array($n/2-1,$n/2-2),array($n/2-2,$n/2-1),array($n/2,$n/2+1),array($n/2+1,$n/2));
             }
