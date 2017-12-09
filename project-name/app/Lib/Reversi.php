@@ -16,7 +16,7 @@ class Reversi
 
     public function startReversi($user_id, $board)
     {
-        $reversi_user_status = ReversiUserStatus::find($user_id);
+        $reversi_user_status = ReversiUserStatus::where(['user_id' => $user_id])->first();
         $reversi_user_status->progress = 1;
         $reversi_user_status->turn = 0;
         $reversi_user_status->board = $board;
@@ -25,7 +25,7 @@ class Reversi
 
     public function endReversi($user_id)
     {
-        $reversi_user_status = ReversiUserStatus::find($user_id);
+        $reversi_user_status = ReversiUserStatus::where(['user_id' => $user_id])->first();
         $reversi_user_status->progress = 0;
         $reversi_user_status->level = 0;
         $reversi_user_status->turn = 0;
@@ -35,14 +35,14 @@ class Reversi
 
     public function updateBoard($user_id, $board)
     {
-        $reversi_user_status = ReversiUserStatus::find($user_id);
+        $reversi_user_status = ReversiUserStatus::where(['user_id' => $user_id])->first();
         $reversi_user_status->board = $board;
         $reversi_user_status->save();
     }
 
     public function updateTurn($user_id, $level, $turn)
     {
-        $reversi_user_status = ReversiUserStatus::find($user_id);
+        $reversi_user_status = ReversiUserStatus::where(['user_id' => $user_id])->first();
         $reversi_user_status->level = $level;
         $reversi_user_status->turn = $turn;
         $reversi_user_status->save();

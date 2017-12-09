@@ -48,11 +48,9 @@
                     <tr>
                     @foreach ($item as $j => $v)
                         <td id="cell_{{ $i }}_{{ $j }}" class="cell
-                        @if ($v['put'])
-                            put
-                        @elseif ($v['state'] == 1)
+                        @if ($v == 1)
                             black
-                        @elseif ($v['state'] == -1)
+                        @elseif ($v == -1)
                             white
                         @else
                             empty
@@ -82,6 +80,9 @@
                         <img class="img-small" src="/img/{{ $avatar['card_id'] }}.jpg">
                     </div>
                 </div>
+            </div>
+            <div id="fix" class="mt10">
+                <div class="btn btn-primary btn-fix">置く</div>
             </div>
             <div id="pass" class="mt10">
                 <div class="btn btn-primary btn-pass">パス</div>
@@ -133,7 +134,7 @@
         margin: 0 auto;
         position: relative;
     }
-    #pass{text-align: center;}
+    #fix, #pass{text-align: center;display: none;}
     .end {
         position: relative;
         top: -290px;
@@ -188,7 +189,7 @@
         left: -15px;
         z-index: -1;
     }
-    .btn-pass{position:absolute;left: 100px;}
+    .btn-fix, .btn-pass{position:absolute;left: 100px;}
     .radio-inline2 input[type="radio"] {
         position: relative;
         top: -45px;
@@ -221,11 +222,12 @@
     }
     table .cell > .disc {
         display: inline-block;
-        max-width: 40px;
-        max-height: 40px;
-        width: calc((100vmin - (39px + 48px))/8);
-        height: calc((100vmin - (39px + 48px))/8);
+        max-width: 20px;
+        max-height: 20px;
+        width: calc((100vmin - (39px + 48px))/15);
+        height: calc((100vmin - (39px + 48px))/15);
         border-radius: 50%;
+
         transform-style: preserve-3d;
         -webkit-transform-style: preserve-3d;
         -webkit-transform:perspective(0) rotateY(0deg);
@@ -235,14 +237,28 @@
         -moz-transition:ease-out 0.1s -moz-transform;
         transition:ease-out 0.1s transform;
     }
+    .board {
+        background:url("/img/anime/board2.png") no-repeat;
+        width: 320px;
+        height: 320px;
+        background-size: 100% auto;
+    }
+    .table {
+        width: 300px;
+        height: 300px;
+        margin: 0 auto;
+        position: relative;
+        top: 10px;
+    }
     table {
         border-collapse: collapse;
         border-spacing: 0;
     }
     table .cell {
         line-height: 0  !important;
-        background: #090;
-        border: 1px solid #ccc;
+        /*background: #090;
+        border: 1px solid #ccc;*/
+        border: hidden !important;
         padding: 3px !important;
         margin: 0;
     }
@@ -253,17 +269,37 @@
         background: #fff;
     }
     table .cell.put {
-        background: #290;
+        /*background: #290;*/
     }
     table .cell.put > .disc {
         background: #3A0;
+    }
+    table .cell.put > .disc {
+        @if ($turn == 1)
+            background: #333;
+        @else
+            background: #fff;
+        @endif
+        opacity: 0.6;
+    }
+    table .cell.white.put > .disc {
+        background: #fff;
+        opacity: 0.6;
+    }
+    table .cell.black.put > .disc {
+        background: #333;
+        opacity: 0.6;
+    }
+    .turn_view {
+        width: 40px;
+        text-align: center;
     }
     @if ($turn == 0)
     #view {
         display: none;
     }
     @endif
-    @if ($can_put)
+    @if ($pass)
     #pass {
         display: none;
     }
@@ -303,9 +339,11 @@
         $('#modalContLoading').css('display','block');
         $('#loading').css('display','block');
 
+        isPut = true;
+
         $.ajax({
             type: "POST",
-            url: "/reversi/doSetTurn",
+            url: "/gomoku/doSetTurn",
             data: {
                 level : level,
                 turn : turn
@@ -318,12 +356,11 @@
                 $('#view').css('display','block');
 
                 if (msg.error) {
-                    window.location = 'reversiSwf';
+                    window.location = 'gomokuSwf';
                 }
                 result = msg.result;
                 level_list = msg.level_list;
                 turn = msg.turn;
-                change_turn = msg.change_turn;
 
                 $('#enemy_img').html('<img class="img-small" src="/img/'+level_list[level].card_id+'.jpg">');
                 $("#enemy_name").html(level_list[level].name);
@@ -340,21 +377,23 @@
                 }
 
                 next(function(){
-                    if (change_turn) {
-                        next(function(){
-                            talk("俺が後手か？");
-                            return wait(2);
-                        }).
-                        next(function(){
-                            talk('だが断る');
-                            return wait(2);
-                        });
-                        return wait(4);
+                    talk(result.talk);
+                    return wait(2);
+                }).
+                next(function(){
+                    if (result.my_put.length) {
+                        return wait(1);
                     }
                 }).
                 next(function(){
-                    talk(result.talk);
-                    return wait(2);
+                    if (result.my_put.length) {
+                        if (turn == 1) {
+                            $("#cell_"+result.my_put[0]+"_"+result.my_put[1]).removeClass("empty").addClass("black");
+                        } else {
+                            $("#cell_"+result.my_put[0]+"_"+result.my_put[1]).removeClass("empty").addClass("white");
+                        }
+                        return wait(0.5);
+                    }
                 }).
                 next(function(){
                     if (result.opponent_put.length) {
@@ -364,31 +403,14 @@
                 next(function(){
                     if (result.opponent_put.length) {
                         if (turn == 1) {
-                            $("#cell_"+result.opponent_put[0]+"_"+result.opponent_put[1]).addClass("white");
+                            $("#cell_"+result.opponent_put[0]+"_"+result.opponent_put[1]).removeClass("empty").addClass("white");
                         } else {
-                            $("#cell_"+result.opponent_put[0]+"_"+result.opponent_put[1]).addClass("black");
+                            $("#cell_"+result.opponent_put[0]+"_"+result.opponent_put[1]).removeClass("empty").addClass("black");
                         }
+                        isPut = false;
                         return wait(0.5);
-                    }
-                }).
-                next(function(){
-                    if (result.opponent_tip_over.length) {
-                        $.each(result.opponent_tip_over,function(){
-                            if (turn == 1) {
-                                discRotate("#cell_"+this[0]+"_"+this[1], "black", "white");
-                            } else {
-                                discRotate("#cell_"+this[0]+"_"+this[1], "white", "black");
-                            }
-                        });
-                        return wait(1);
-                    }
-                }).
-                next(function(){
-                    if (result.next_put.length) {
-                        $.each(result.next_put,function(){
-                            $("#cell_"+this[0]+"_"+this[1]).addClass("put");
-                        });
-                        return wait(0.5);
+                    } else {
+                        isPut = false;
                     }
                 });
             }
@@ -405,26 +427,6 @@
         next(function(){
             $('#balloon').fadeOut(200);
             return wait(0.5);
-        });
-    }
-
-    // カードめくり用関数
-    function discRotate(cell, remove, add) {
-        next(function(){
-            $(cell).children("span").css("-webkit-transform" , "perspective(0) rotateY(-90deg)");
-            $(cell).children("span").css("-moz-transform" , "perspective(0px) rotateY(-90deg)");
-            $(cell).children("span").css("transform" , "perspective(0px) rotateY(-90deg)");
-            return wait(0.2);
-        }).
-        next(function(){
-            $(cell).removeClass(remove).addClass(add);
-            return wait(0.1);
-        }).
-        next(function(){
-            $(cell).children("span").css("-webkit-transform" , "perspective(0) rotateY(0deg)");
-            $(cell).children("span").css("-moz-transform" , "perspective(0px) rotateY(0deg)");
-            $(cell).children("span").css("transform" , "perspective(0px) rotateY(0deg)");
-            return wait(0.2);
         });
     }
 
@@ -445,8 +447,25 @@
     });
 
     $(function(){
-        $('.table').on('click', '.put', function () {
-            id = this.id;
+        $('.table').on('click', '.empty', function () {
+            if(!isPut){
+                id = this.id;
+                v = id.split("_");
+                x = v[1];
+                y = v[2];
+                $('.put').removeClass().addClass("cell").addClass("empty");
+                $("#cell_"+x+"_"+y).removeClass("empty").addClass("put");
+                if (turn==1) {
+                    $("#cell_"+x+"_"+y).addClass("black");
+                } else {
+                    $("#cell_"+x+"_"+y).addClass("white");
+                }
+                $('#fix').css('display','block');
+            }
+        });
+
+        $('#animelim').on('click', '#fix', function () {
+            id = $('.put').attr("id");
             v = id.split("_");
             x = v[1];
             y = v[2];
@@ -463,9 +482,11 @@
                 $('#modalContLoading').css('display','block');
                 $('#loading').css('display','block');
 
+                $('#fix').css('display','none');
+
                 $.ajax({
                     type: "POST",
-                    url: "/reversi/doPut",
+                    url: "/gomoku/doPut",
                     data: {
                         x : x,
                         y : y
@@ -475,32 +496,21 @@
                         $('#modalContLoading').css('display','none');
                         $('#loading').css('display','none');
                         if (msg.error) {
-                            window.location = 'reversiSwf';
+                            window.location = 'gomokuSwf';
                         }
                         $(".put").removeClass("put");
+                        memKey = msg.memKey
 
                         result = msg.result;
 
                         next(function(){
                             if (result.my_put.length) {
                                 if (turn == 1) {
-                                    $("#cell_"+result.my_put[0]+"_"+result.my_put[1]).addClass("black");
+                                    $("#cell_"+result.my_put[0]+"_"+result.my_put[1]).removeClass("empty").addClass("black");
                                 } else {
-                                    $("#cell_"+result.my_put[0]+"_"+result.my_put[1]).addClass("white");
+                                    $("#cell_"+result.my_put[0]+"_"+result.my_put[1]).removeClass("empty").addClass("white");
                                 }
                                 return wait(0.5);
-                            }
-                        }).
-                        next(function(){
-                            if (result.my_tip_over.length) {
-                                $.each(result.my_tip_over,function(){
-                                    if (turn == 1) {
-                                        discRotate("#cell_"+this[0]+"_"+this[1], "white", "black");
-                                    } else {
-                                        discRotate("#cell_"+this[0]+"_"+this[1], "black", "white");
-                                    }
-                                });
-                                return wait(1);
                             }
                         }).
                         next(function(){
@@ -512,23 +522,11 @@
                         next(function(){
                             if (result.opponent_put.length) {
                                 if (turn == 1) {
-                                    $("#cell_"+result.opponent_put[0]+"_"+result.opponent_put[1]).addClass("white");
+                                    $("#cell_"+result.opponent_put[0]+"_"+result.opponent_put[1]).removeClass("empty").addClass("white");
                                 } else {
-                                    $("#cell_"+result.opponent_put[0]+"_"+result.opponent_put[1]).addClass("black");
+                                    $("#cell_"+result.opponent_put[0]+"_"+result.opponent_put[1]).removeClass("empty").addClass("black");
                                 }
                                 return wait(0.5);
-                            }
-                        }).
-                        next(function(){
-                            if (result.opponent_tip_over.length) {
-                                $.each(result.opponent_tip_over,function(){
-                                    if (turn == 1) {
-                                        discRotate("#cell_"+this[0]+"_"+this[1], "black", "white");
-                                    } else {
-                                        discRotate("#cell_"+this[0]+"_"+this[1], "white", "black");
-                                    }
-                                });
-                                return wait(1);
                             }
                         }).
                         next(function(){
@@ -541,11 +539,8 @@
                                     $("#result").html('<div class="result_draw">引き分け</div>');
                                 }
                                 $('#end').fadeIn(1000);
-                            } else if (result.next_put.length) {
-                                $.each(result.next_put,function(){
-                                    $("#cell_"+this[0]+"_"+this[1]).addClass("put");
-                                });
-                            } else {
+                                return wait(0.5);
+                            } else if (result.pass) {
                                 $('#pass').css('display','block');
                             }
                             isPut = false;
@@ -557,9 +552,7 @@
                 });
             }
         });
-    });
 
-    $(function(){
         $('#animelim').on('click', '#pass', function () {
 
             if(!isPut){
@@ -574,19 +567,20 @@
                 $('#modalContLoading').css('display','block');
                 $('#loading').css('display','block');
 
-                $('#pass').css('display','none');
+                $('#fix').css('display','none');
 
                 $.ajax({
                     type: "POST",
-                    url: "/reversi/doPass",
+                    url: "/gomoku/doPass",
                     data: {},
                     dataType: 'json',
                     success: function(msg){
                         $('#modalContLoading').css('display','none');
                         $('#loading').css('display','none');
                         if (msg.error) {
-                            window.location = 'reversiSwf';
+                            window.location = 'gomokuSwf';
                         }
+                        memKey = msg.memKey
 
                         result = msg.result;
                         if (msg.end) {
@@ -616,23 +610,7 @@
                             }
                         }).
                         next(function(){
-                            if (result.opponent_tip_over.length) {
-                                $.each(result.opponent_tip_over,function(){
-                                    if (turn == 1) {
-                                        discRotate("#cell_"+this[0]+"_"+this[1], "black", "white");
-                                    } else {
-                                        discRotate("#cell_"+this[0]+"_"+this[1], "white", "black");
-                                    }
-                                });
-                                return wait(1);
-                            }
-                        }).
-                        next(function(){
-                            if (result.next_put.length) {
-                                $.each(result.next_put,function(){
-                                    $("#cell_"+this[0]+"_"+this[1]).addClass("put");
-                                });
-                            } else {
+                            if (result.pass) {
                                 $('#pass').css('display','block');
                             }
                             isPut = false;

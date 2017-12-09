@@ -39,37 +39,32 @@ mysql -hmysql -uroot -proot_passward < temp.sql
 ///////////////////
 
 CONTAINER ID        IMAGE                   COMMAND                  CREATED             STATUS              PORTS                                        NAMES
-8df1c57a26bd        docker_nginx            "nginx -g 'daemon ..."   10 seconds ago      Up 7 seconds        0.0.0.0:443->443/tcp, 0.0.0.0:8000->80/tcp   nginx
-48782715a134        docker_web              "docker-php-entryp..."   14 seconds ago      Up 10 seconds       9000/tcp                                     web
-e43ef6256b06        docker_tensorflow       "/run_jupyter.sh -..."   17 seconds ago      Up 15 seconds       6006/tcp, 0.0.0.0:8888-8889->8888-8889/tcp   docker_tensorflow_1
-1a2f18c92635        docker_ubuntu           "/bin/bash"              11 days ago         Up 26 minutes                                                    ubuntu
-cebd760d5648        phpmyadmin/phpmyadmin   "/run.sh phpmyadmin"     11 days ago         Up 26 minutes       0.0.0.0:8080->80/tcp                         docker_phpmyadmin_1
-26ce39350c6c        mysql                   "docker-entrypoint..."   11 days ago         Up 26 minutes       0.0.0.0:13306->3306/tcp                      mysql
-70582e8b05ce        memcached               "docker-entrypoint..."   11 days ago         Up 26 minutes       11211/tcp                                    memcached
-3a3ae4e39a49        redis                   "docker-entrypoint..."   11 days ago         Up 26 minutes       6379/tcp                                     redis
+df07f8cb609f        docker_nginx            "nginx -g 'daemon ..."   16 minutes ago      Up 16 minutes       0.0.0.0:443->443/tcp, 0.0.0.0:8000->80/tcp   nginx
+4f9779f8b7aa        docker_web              "docker-php-entryp..."   16 minutes ago      Up 16 minutes       9000/tcp                                     web
+b1b139308e3a        docker_ubuntu           "/bin/bash"              16 minutes ago      Up 16 minutes                                                    ubuntu
+58d4639c9afc        phpmyadmin/phpmyadmin   "/run.sh phpmyadmin"     16 minutes ago      Up 16 minutes       0.0.0.0:8080->80/tcp                         docker_phpmyadmin_1
+b54869b0cc92        mysql                   "docker-entrypoint..."   16 minutes ago      Up 16 minutes       0.0.0.0:13306->3306/tcp                      mysql
+8c07423f57e9        docker_tensorflow       "/run_jupyter.sh -..."   16 minutes ago      Up 16 minutes       6006/tcp, 0.0.0.0:8888-8889->8888-8889/tcp   docker_tensorflow_1
+70582e8b05ce        memcached               "docker-entrypoint..."   2 months ago        Up 16 minutes       11211/tcp                                    memcached
+3a3ae4e39a49        redis                   "docker-entrypoint..."   2 months ago        Up 16 minutes       6379/tcp
 
 
-web
-docker exec -it 1ef5b9be51c5 bash
-
-mysql
-docker exec -it 602e569dfb5d bash
-
-tensorflow
-docker exec -it e43ef6256b06 bash
-
-docker inspect --format '{{ .NetworkSettings.IPAddress }}' 602e569dfb5d
-
-
-docker logs 24347f3883b3
+docker exec -it 4f9779f8b7aa bash
 
 docker logs 602e569dfb5d
+
+///////////////////
 
 
 マイグレーション生成(SQL生成)
 php artisan make:migration reversi_logs_table
 php artisan make:migration reversi_user_results_table
 php artisan make:migration reversi_user_statuses_table
+
+php artisan make:migration gomoku_logs_table
+php artisan make:migration gomoku_user_results_table
+php artisan make:migration gomoku_user_statuses_table
+
 
 webサーバで以下実行
 cd project-name
@@ -81,10 +76,15 @@ php artisan make:model ReversiLog
 php artisan make:model ReversiUserResult
 php artisan make:model ReversiUserStatus
 
+php artisan make:model GomokuLog
+php artisan make:model GomokuUserResult
+php artisan make:model GomokuUserStatus
+
 
 コントローラー作成
 php artisan make:controller ReversiController
 php artisan make:controller Wtb2CsvGenerateController
+php artisan make:controller GomokuController
 
 キャッシュクリア
 php artisan cache:clear
@@ -126,3 +126,4 @@ for k,v in enumerate(X):
     if Y[k][0] == 0:
         ax1.scatter(v[0], v[1], alpha=.7)
 plt.show()
+

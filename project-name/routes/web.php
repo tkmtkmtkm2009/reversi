@@ -25,4 +25,11 @@ Route::post('reversi/doSetTurn', 'ReversiController@doSetTurn');
 Route::post('reversi/doPut', 'ReversiController@doPut');
 Route::post('reversi/doPass', 'ReversiController@doPass');
 
+Route::get('gomoku/index', 'GomokuController@index');
+Route::get('gomoku/gomokuSwf', 'GomokuController@gomokuSwf');
+Route::get('gomoku/doStartGomoku', 'GomokuController@doStartGomoku');
+Route::post('gomoku/doSetTurn', 'GomokuController@doSetTurn');
+Route::post('gomoku/doPut', 'GomokuController@doPut');
+Route::post('gomoku/doPass', 'GomokuController@doPass');
+
 Route::get('wtb2csv/index', 'Wtb2CsvController@index');

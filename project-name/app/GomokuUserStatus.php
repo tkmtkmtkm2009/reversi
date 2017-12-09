@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ReversiUserStatus extends Model
+class GomokuUserStatus extends Model
 {
     //
     protected $guarded = ['id'];
