@@ -53,7 +53,7 @@ services:
       - mysql
       - memcached
       - redis
-      - tensorflow
+#      - tensorflow
     environment:
       DATABASE_HOST: 'mysql'
       DATABASE_NAME: 'mysql_database'
